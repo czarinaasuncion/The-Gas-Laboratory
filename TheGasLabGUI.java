@@ -9,9 +9,10 @@ public class TheGasLabGUI extends JFrame {
 
     JFrame frame;
     JLabel lblGasImage, lblGasName, lblGasType, nobleBox, nonmetalBox, nobleTxt, nonmetalTxt;
-    JPanel centerPanel, detailPanel, headerPanel, legendPanel, propertyPanel, appPanel;
-    JButton btnBack;
+    JPanel centerPanel, detailPanel, headerPanel, legendPanel, propertyPanel, appPanel, searchPanel;
+    JButton btnBack, searchBtn;
     JTextArea txtDetails, txtApp;
+    JTextField searchField;
     List<JButton> btnGas;
     
     // mga colors na gagamitin
@@ -41,12 +42,11 @@ public class TheGasLabGUI extends JFrame {
         headerPanel.setBackground(DarkBlue);
         headerPanel.setPreferredSize(new Dimension(0, 100));
         headerPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, HeaderLineColor));
-
         try {
             ImageIcon logoIcon = new ImageIcon(getClass().getResource("/gaslabGraphics/gaslablogo.png"));
             Image scaledLogo = logoIcon.getImage().getScaledInstance(110, 60, Image.SCALE_SMOOTH);
             JLabel lblLogo = new JLabel(new ImageIcon(scaledLogo));
-            lblLogo.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); 
+            lblLogo.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
             headerPanel.add(lblLogo, BorderLayout.WEST);
         } catch (Exception e) {
             JLabel lblLogoPlaceholder = new JLabel("  THE GAS LAB");
@@ -54,6 +54,20 @@ public class TheGasLabGUI extends JFrame {
             lblLogoPlaceholder.setFont(new Font("Arial", Font.BOLD, 22));
             headerPanel.add(lblLogoPlaceholder, BorderLayout.WEST);
         }
+
+
+        searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 30));
+        searchPanel.setOpaque(false);
+        searchField = new JTextField("Search Element", 10);
+        searchField.setPreferredSize(new Dimension(150, 40));
+
+        searchBtn = new JButton("Find");
+        searchBtn.setPreferredSize(new Dimension(80, 40));
+        searchBtn.addActionListener(e -> performSearch());
+        searchPanel.add(searchField);
+        searchPanel.add(searchBtn);
+        
+        headerPanel.add(searchPanel, BorderLayout.EAST);
 
         // center panel, yung mismong periodic table map
         centerPanel = new JPanel(null);
@@ -100,10 +114,13 @@ public class TheGasLabGUI extends JFrame {
     private JButton createGasButton(String symbol, int x, int y) {
         String name = getFileName(symbol);
         ImageIcon icon = new ImageIcon(getClass().getResource("/gaslabGraphics/" + name + ".png"));
-        Image scaled = icon.getImage().getScaledInstance(70, 90, Image.SCALE_SMOOTH);
-        
+        int normalWidth = 70;
+        int normalHeight = 90;
+
+        Image scaled = icon.getImage().getScaledInstance(normalWidth, normalHeight, Image.SCALE_SMOOTH);
+
         JButton btn = new JButton(new ImageIcon(scaled));
-        btn.setBounds(x, y, 70, 90);
+        btn.setBounds(x, y, normalWidth, normalHeight);
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
         btn.setFocusable(false);
@@ -174,7 +191,7 @@ public class TheGasLabGUI extends JFrame {
         txtApp.setFont(new Font("Arial", Font.PLAIN, 18));
         appPanel.add(txtApp);
 
-        btnBack = new JButton("<- Back to Full Screen");
+        btnBack = new JButton("◀ Back to Full Screen");
         btnBack.setBounds(75, 610, 200, 50);
         btnBack.setForeground(HeaderLineColor);
         btnBack.setBackground(new Color(147, 53, 61));
@@ -183,7 +200,7 @@ public class TheGasLabGUI extends JFrame {
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBack.addActionListener(e -> {
             detailPanel.setVisible(false);
-            frame.revalidate(); // Re-centers content when sidebar is hidden
+            frame.revalidate();
             frame.repaint();
         });
 
@@ -258,6 +275,28 @@ public class TheGasLabGUI extends JFrame {
             default -> "";
         };
     }
+
+    private void performSearch() {
+    String query = searchField.getText().trim();
+    Gas foundGas = logic.findGases(query);
+    for (JButton btn : btnGas) {
+        if (foundGas != null) {
+            String btnSymbol = getSymbolFromButton(btn);
+            btn.setVisible(btnSymbol.equalsIgnoreCase(foundGas.getSymbol()));
+        } else {
+            btn.setVisible(query.isEmpty());
+        }
+    }
+    centerPanel.repaint();
+}
+
+private String getSymbolFromButton(JButton btn) {
+    int index = btnGas.indexOf(btn);
+    String[][] gasData = {
+        {"H"}, {"He"}, {"N"}, {"O"}, {"F"}, {"Ne"}, {"Cl"}, {"Ar"}, {"Kr"}, {"Xe"}, {"Rn"}
+    };
+    return gasData[index][0];
+}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(TheGasLabGUI::new);
