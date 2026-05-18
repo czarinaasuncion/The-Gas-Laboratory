@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-
 class TheGasLab {
     private List<Gas> gases = new ArrayList<>();
 
